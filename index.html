@@ -1,0 +1,215 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>React Sports Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- include an element for ReactDOM to attach our React-generated elements to -->
+    <div id="root"></div>
+
+
+    </div>
+
+    <!-- include React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <!-- include Babel standalone so we can process JSX in React.createElement stuff -->
+    <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- include our JS+JSX for the React Appliccation -->
+    <script type="text/babel">
+
+        // An App component under which all other components will be added
+
+        class Game extends React.Component {
+            constructor(props) {
+                super(props)
+
+                this.state = {
+                    resetCount: 0,
+                    homeTeamStats: {
+                        shots: 0,
+                        score: 0,
+                    },
+                    visitingTeamStats: {
+                        shots: 0,
+                        score: 0,
+                    }
+                }
+                this.shotSound = new Audio('./assets/audio/Back+Board.mp3')
+                this.scoreSound = new Audio('./assets/audio/hitcrowdcheer.mp3')
+            }
+
+            changeShots = (team) => {
+                const teamStatsKey = `${team}TeamStats`
+                let score = this.state[teamStatsKey].score
+                this.shotSound.play()
+                this.setState((state, props) => ({
+                    [teamStatsKey]: {
+                        shots: state[teamStatsKey].shots + 1,
+                        score
+                    }
+                }))
+                if (Math.random() > 0.5) {
+
+                    setTimeout(() => {
+                        this.shotSound.play()
+                        this.scoreSound.play()
+                    }, 50)
+
+                    return {
+                        shotsTaken: currentState.shotsTaken + 1,
+                        score: currentState.score + 1
+                    }
+                } else {
+                    setTimeout(() => {
+                        this.shotSound.play()
+                    }, 50)
+                    return {
+                        shotsTaken: currentState.shotsTaken + 1
+                    }
+
+                    //this.state is a property with keys, and shotsTaken is one of those keys. The left hand side is the key- the name of the key- and the right hand side is the value, and this is a new value.
+                }
+            }
+
+
+            resetGame = () => {
+                this.setState((state, props) => ({
+                    resetCount: state.resetCount + 1,
+                    homeTeamStats: {
+                        shots: 0,
+                        score: 0
+                    },
+                    visitingTeamStats: {
+                        shots: 0,
+                        score: 0
+                    }
+                }))
+            }
+
+            render() {
+                return (
+                    <div className="Game">
+                        <h1>Welcome to {this.props.venue}</h1>
+                        <div className="stats">
+                            <Team
+                                name={this.props.visitingTeam.name}
+                                logo={this.props.visitingTeam.logoSrc}
+                                stats={this.props.stats.visitingTeamStats}
+                                shotHandler={() => this.shoot('visiting')}
+                            />
+
+                            <div className="versus">
+                                <h1>VS</h1></div>
+                            <div>
+                                <strong>Resets:</strong>{this.state.resetCount}
+                                <button onClick={this.resetGame}>Reset Game</button>
+                            </div>
+
+                            <Team
+                                name={this.props.homeTeam.name}
+                                logo={this.props.homeTeam.logoSrc}
+                                stats={this.props.stats.homeTeamStats}
+                                shotHandler={() => this.shoot('home')}
+                            />
+                        </div>
+                    </div>
+                )
+            }
+        }
+
+        function App(props) {
+            const Renegades = {
+                name: "Renegades",
+                logoSrc: "./assets/images/ralph.jpg"
+            }
+
+            const Outlaws = {
+                name: "Outlaws",
+                logoSrc: "./assets/images/bob.jpg"
+            }
+
+            const Pirates = {
+                name: "Pirates",
+                logoSrc: "./assets/images/michael.jpg"
+            }
+
+            const Buccaneers = {
+                name: "Buccaneers",
+                logoSrc: "./assets/images/tom.jpg"
+            }
+
+
+            return (
+                <div className="App">
+                    <Game venue="Ralph Wiggum's Playhouse"
+                        homeTeam={Renegades}
+                        visitingTeam={Outlaws} />
+
+                    <Game venue="Sideshow Bob's Prison Cell"
+                        homeTeam={Outlaws}
+                        visitingTeam={Renegades} />
+
+                    <Game venue="The Lonely Island"
+                        homeTeam={Pirates}
+                        visitingTeam={Buccaneers} />
+
+                    <Game venue="Matt Damon's Basement"
+                        homeTeam={Buccaneers}
+                        visitingTeam={Pirates} />
+                </div>
+            )
+        }
+
+        function Team(props) {
+
+
+
+            return (
+                <div className="Team">
+                    <h2>{this.props.name}</h2>
+
+                    <div className="identity">
+                        <img src={this.props.logo}
+                            alt={this.props.name} />
+                    </div>
+                </div>
+            )
+        }
+
+        // render() {//In JSX, anything where you want to use Javascript needs to be surrounded by curly brackets. This is dot notation and that's one example of JS.
+
+        //     let statsDiv
+        //     if (this.state.shotsTaken) {
+        //         const shotPercentage = Math.round(props.stats.score / props.stats.shotsTaken * 100)
+        //         statsDiv = (<div>Shooting Percentage {shotPercentage}%</div>)
+        //     }
+
+        //     return (
+        //         <div>
+        //             <h1>{props.name}</h1>
+        //             <img src={props.logo} alt={props.name} width={200} height={200} />
+        //             <h3>Shots Taken: {props.stats.shotsTaken}</h3>
+        //             <h3>Score {props.stats.score}</h3>
+        //             <button onClick={props.shotHandler}>Shoot</button>
+        //             {statsDiv}
+
+        //         </div>
+        //     )
+        // }
+
+        // Render the App
+        ReactDOM.render(
+            <App />,
+            document.getElementById('root')
+        )
+    </script>
+</body>
+
+</html>
