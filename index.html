@@ -26,6 +26,24 @@
 
         // An App component under which all other components will be added
 
+        function ScoreBoard(props) {
+            return (
+                <div className="ScoreBoard">
+                    <div className="teamStats">
+                        <h3>VISITORS</h3>
+                        <h3>{props.visitingTeamStats.score}</h3>
+                    </div>
+
+                    <h3>SCOREBOARD</h3>
+
+                    <div className="teamStats">
+                        <h3>HOME</h3>
+                        <h3>{props.homeTeamStats.score}</h3>
+                    </div>
+                </div>
+            )
+        }
+
         class Game extends React.Component {
             constructor(props) {
                 super(props)
@@ -33,11 +51,11 @@
                 this.state = {
                     resetCount: 0,
                     homeTeamStats: {
-                        shots: 0,
+                        shotsTaken: 0,
                         score: 0,
                     },
                     visitingTeamStats: {
-                        shots: 0,
+                        shotsTaken: 0,
                         score: 0,
                     }
                 }
@@ -49,10 +67,10 @@
                 const teamStatsKey = `${team}TeamStats`
                 let score = this.state[teamStatsKey].score
                 this.shotSound.play()
-                this.setState((state, props) => ({
+                this.setState((currentState, props) => ({
                     [teamStatsKey]: {
-                        shots: state[teamStatsKey].shots + 1,
-                        score
+                        shots: currentState[teamStatsKey].shots = 0,
+                        score: currentState[teamStatsKey].score = 0
                     }
                 }))
                 if (Math.random() > 0.5) {
@@ -96,13 +114,17 @@
             render() {
                 return (
                     <div className="Game">
+                        <ScoreBoard
+                            visitingTeamStats={this.state.visitingTeamStats}
+                            homeTeamStats={this.state.homeTeamStats}
+                        />
                         <h1>Welcome to {this.props.venue}</h1>
                         <div className="stats">
                             <Team
                                 name={this.props.visitingTeam.name}
                                 logo={this.props.visitingTeam.logoSrc}
-                                stats={this.props.stats.visitingTeamStats}
-                                shotHandler={() => this.shoot('visiting')}
+                                stats={this.state.visitingTeamStats}
+                                shotHandler={() => this.changeShots('visiting')}
                             />
 
                             <div className="versus">
@@ -115,14 +137,20 @@
                             <Team
                                 name={this.props.homeTeam.name}
                                 logo={this.props.homeTeam.logoSrc}
-                                stats={this.props.stats.homeTeamStats}
-                                shotHandler={() => this.shoot('home')}
+                                stats={this.state.homeTeamStats}
+                                shotHandler={() => this.changeShots('home')}
                             />
                         </div>
                     </div>
                 )
             }
         }
+
+        //Props notes: Props are created when one component is rendering another component and you want certain info passed to the child component. Inside the child component's tag you'd reference name, logo, anything- set it equal to a string maybe, but otherwise within curly brackets. The props always travel in one direction, parent to child, waterfall style.
+        //Funcional components access props with props dot followed by the property you want to access. Props.name for example.
+        //Class components, within the class constructor, is the only place where that props dot format holds true. Otherwise, class components operate with this.props.something and if that class has something it's keeping track of in state, then this.state.something might happen instead of props because it could come from props or from a stateful situation.
+        //In a more complex situation, Game- which is the parent- became stateful and the state can be passed on as props without reference to state. Props can reference stateful components- but only class can have state or be stateful, functions cannot. So the short story is that stateful classes can pass along the state situation through props.
+        //Functions can't be stateful because they aren't really objects and can't have props. A function is like an action, or a process- it takes things in and yields a result, but has no memory and isn't a "thing" in and of itself. Classes are blueprints that create instances. Those instances exist in memory. Functions don't work that way. No state, no memory.
 
         function App(props) {
             const Renegades = {
@@ -169,40 +197,34 @@
 
         function Team(props) {
 
-
+            let statsDiv
+            if (props.stats.shotsTaken) {
+                const shotPercentage = Math.round(props.stats.score / props.stats.shotsTaken * 100)
+                statsDiv = (<div>Shooting Percentage {shotPercentage}%</div>)
+            }
 
             return (
                 <div className="Team">
-                    <h2>{this.props.name}</h2>
+                    <h2>{props.name}</h2>
 
                     <div className="identity">
-                        <img src={this.props.logo}
-                            alt={this.props.name} />
+                        <img src={props.logo} alt={props.name} />
                     </div>
+
+                    <div>
+                        <strong>Shots Taken:</strong> {props.stats.shotsTaken}
+                    </div>
+
+                    <div>
+                        <strong>Score:</strong> {props.stats.score}
+                    </div>
+
+                    {statsDiv}
+
+                    <button onClick={props.shotHandler}>Shoot!</button>
                 </div>
             )
         }
-
-        // render() {//In JSX, anything where you want to use Javascript needs to be surrounded by curly brackets. This is dot notation and that's one example of JS.
-
-        //     let statsDiv
-        //     if (this.state.shotsTaken) {
-        //         const shotPercentage = Math.round(props.stats.score / props.stats.shotsTaken * 100)
-        //         statsDiv = (<div>Shooting Percentage {shotPercentage}%</div>)
-        //     }
-
-        //     return (
-        //         <div>
-        //             <h1>{props.name}</h1>
-        //             <img src={props.logo} alt={props.name} width={200} height={200} />
-        //             <h3>Shots Taken: {props.stats.shotsTaken}</h3>
-        //             <h3>Score {props.stats.score}</h3>
-        //             <button onClick={props.shotHandler}>Shoot</button>
-        //             {statsDiv}
-
-        //         </div>
-        //     )
-        // }
 
         // Render the App
         ReactDOM.render(
