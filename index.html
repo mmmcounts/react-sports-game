@@ -26,6 +26,41 @@
 
         // An App component under which all other components will be added
 
+        function Team(props) {
+            let shotPercentageDiv
+
+            if (props.stats.shots) {
+                const shotPercentage = Math.round((props.stats.score / props.stats.shots) * 100)
+                shotPercentageDiv = (
+                    <div>
+                        <strong>Shooting %: {shotPercentage}</strong>
+                    </div>
+                )
+            }
+
+            return (
+                <div className="Team">
+                    <h2>{props.name}</h2>
+
+                    <div className="identity">
+                        <img src={props.logo} alt={props.name} />
+                    </div>
+
+                    <div>
+                        <strong>Shots:</strong> {props.stats.shots}
+                    </div>
+
+                    <div>
+                        <strong>Score:</strong> {props.stats.score}
+                    </div>
+
+                    {shotPercentageDiv}
+
+                    <button onClick={props.shotHandler}>Shoot!</button>
+                </div>
+            )
+        }
+
         function ScoreBoard(props) {
             return (
                 <div className="ScoreBoard">
@@ -51,51 +86,39 @@
                 this.state = {
                     resetCount: 0,
                     homeTeamStats: {
-                        shotsTaken: 0,
-                        score: 0,
+                        shots: 0,
+                        score: 0
                     },
                     visitingTeamStats: {
-                        shotsTaken: 0,
-                        score: 0,
+                        shots: 0,
+                        score: 0
                     }
                 }
+
                 this.shotSound = new Audio('./assets/audio/Back+Board.mp3')
                 this.scoreSound = new Audio('./assets/audio/hitcrowdcheer.mp3')
             }
 
-            changeShots = (team) => {
+            shoot = (team) => {
                 const teamStatsKey = `${team}TeamStats`
                 let score = this.state[teamStatsKey].score
                 this.shotSound.play()
-                this.setState((currentState, props) => ({
+
+                if (Math.random() > 0.5) {
+                    score += 1
+
+                    setTimeout(() => {
+                        this.scoreSound.play()
+                    }, 100)
+                }
+
+                this.setState((state, props) => ({
                     [teamStatsKey]: {
-                        shots: currentState[teamStatsKey].shots = 0,
-                        score: currentState[teamStatsKey].score = 0
+                        shots: state[teamStatsKey].shots + 1,
+                        score
                     }
                 }))
-                if (Math.random() > 0.5) {
-
-                    setTimeout(() => {
-                        this.shotSound.play()
-                        this.scoreSound.play()
-                    }, 50)
-
-                    return {
-                        shotsTaken: currentState.shotsTaken + 1,
-                        score: currentState.score + 1
-                    }
-                } else {
-                    setTimeout(() => {
-                        this.shotSound.play()
-                    }, 50)
-                    return {
-                        shotsTaken: currentState.shotsTaken + 1
-                    }
-
-                    //this.state is a property with keys, and shotsTaken is one of those keys. The left hand side is the key- the name of the key- and the right hand side is the value, and this is a new value.
-                }
             }
-
 
             resetGame = () => {
                 this.setState((state, props) => ({
@@ -118,27 +141,29 @@
                             visitingTeamStats={this.state.visitingTeamStats}
                             homeTeamStats={this.state.homeTeamStats}
                         />
+
                         <h1>Welcome to {this.props.venue}</h1>
                         <div className="stats">
                             <Team
                                 name={this.props.visitingTeam.name}
-                                logo={this.props.visitingTeam.logoSrc}
+                                logo={this.props.visitingTeam.logo}
                                 stats={this.state.visitingTeamStats}
-                                shotHandler={() => this.changeShots('visiting')}
+                                shotHandler={() => this.shoot('visiting')}
                             />
 
                             <div className="versus">
-                                <h1>VS</h1></div>
-                            <div>
-                                <strong>Resets:</strong>{this.state.resetCount}
-                                <button onClick={this.resetGame}>Reset Game</button>
+                                <h1>VS</h1>
+                                <div>
+                                    <strong>Resets:</strong> {this.state.resetCount}
+                                    <button onClick={this.resetGame}>Reset Game</button>
+                                </div>
                             </div>
 
                             <Team
                                 name={this.props.homeTeam.name}
-                                logo={this.props.homeTeam.logoSrc}
+                                logo={this.props.homeTeam.logo}
                                 stats={this.state.homeTeamStats}
-                                shotHandler={() => this.changeShots('home')}
+                                shotHandler={() => this.shoot('home')}
                             />
                         </div>
                     </div>
@@ -146,33 +171,26 @@
             }
         }
 
-        //Props notes: Props are created when one component is rendering another component and you want certain info passed to the child component. Inside the child component's tag you'd reference name, logo, anything- set it equal to a string maybe, but otherwise within curly brackets. The props always travel in one direction, parent to child, waterfall style.
-        //Funcional components access props with props dot followed by the property you want to access. Props.name for example.
-        //Class components, within the class constructor, is the only place where that props dot format holds true. Otherwise, class components operate with this.props.something and if that class has something it's keeping track of in state, then this.state.something might happen instead of props because it could come from props or from a stateful situation.
-        //In a more complex situation, Game- which is the parent- became stateful and the state can be passed on as props without reference to state. Props can reference stateful components- but only class can have state or be stateful, functions cannot. So the short story is that stateful classes can pass along the state situation through props.
-        //Functions can't be stateful because they aren't really objects and can't have props. A function is like an action, or a process- it takes things in and yields a result, but has no memory and isn't a "thing" in and of itself. Classes are blueprints that create instances. Those instances exist in memory. Functions don't work that way. No state, no memory.
-
         function App(props) {
             const Renegades = {
                 name: "Renegades",
-                logoSrc: "./assets/images/ralph.jpg"
+                logo: "./assets/images/ralph.jpg"
             }
 
             const Outlaws = {
                 name: "Outlaws",
-                logoSrc: "./assets/images/bob.jpg"
+                logo: "./assets/images/bob.jpg"
             }
 
             const Pirates = {
                 name: "Pirates",
-                logoSrc: "./assets/images/michael.jpg"
+                logo: "./assets/images/michael.jpg"
             }
 
             const Buccaneers = {
                 name: "Buccaneers",
-                logoSrc: "./assets/images/tom.jpg"
+                logo: "./assets/images/tom.jpg"
             }
-
 
             return (
                 <div className="App">
@@ -195,38 +213,6 @@
             )
         }
 
-        function Team(props) {
-
-            let statsDiv
-            if (props.stats.shotsTaken) {
-                const shotPercentage = Math.round(props.stats.score / props.stats.shotsTaken * 100)
-                statsDiv = (<div>Shooting Percentage {shotPercentage}%</div>)
-            }
-
-            return (
-                <div className="Team">
-                    <h2>{props.name}</h2>
-
-                    <div className="identity">
-                        <img src={props.logo} alt={props.name} />
-                    </div>
-
-                    <div>
-                        <strong>Shots Taken:</strong> {props.stats.shotsTaken}
-                    </div>
-
-                    <div>
-                        <strong>Score:</strong> {props.stats.score}
-                    </div>
-
-                    {statsDiv}
-
-                    <button onClick={props.shotHandler}>Shoot!</button>
-                </div>
-            )
-        }
-
-        // Render the App
         ReactDOM.render(
             <App />,
             document.getElementById('root')
